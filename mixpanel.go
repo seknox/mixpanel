@@ -1,26 +1,26 @@
 package mixpanel
 
 import (
-	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 )
 
+// Mixpanel client config
 type Config struct {
-	APIEndpoint string
 	Verbose int 
 	Token string 
 }
 
 
 const (
-	MixpanelEndpoint = "https://api.mixpanel.com"
+	TrackEndpoint = "https://api.mixpanel.com/track#live-event"
 )
 
-
+//  NewClient initializes new config
 func NewClient(token string, verbose int) *Config {
  return &Config{
-	APIEndpoint: MixpanelEndpoint,
 	Verbose: verbose,
 	Token: token,
  }
@@ -30,32 +30,36 @@ func NewClient(token string, verbose int) *Config {
 type Track struct {
 	Event string `json:"event"`
 	Properties TrackProperties  `json:"properties"`
-	// Returns data if req is successfull.Value should be 0 or 1.
-	Verbose int `json:"verbose"`
 }
 
 type TrackProperties struct {
 	// Unique user ID
-	DistinctID string 
+	DistinctID string `json:"distinct_id"`
 	// Project token
-	Token string 
+	Token string `json:"token"`
 	// User remote IP address
-	IP string 
+	IP string  `json:"ip"`
 	// Event time
-	Time int64
+	Time int64 `json:"time"`
 	// Unique event ID
-	InsertID string
+	InsertID string `json:"$insert_id"`
 }
 
-// Send Track request
+// Track sends mixpanel trackevent - https://developer.mixpanel.com/reference/events#track-event
 func (con Config) Track(track Track) error {
 
 	track.Properties.Token = con.Token
-	reqBody, err := json.Marshal(track)
+
+
+	data, err := json.Marshal(track)
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest("POST", con.APIEndpoint, bytes.NewBuffer(reqBody))
+
+	reqBody := fmt.Sprintf("data=%s", string(data))
+
+
+	req, err := http.NewRequest("POST", TrackEndpoint, strings.NewReader(reqBody))
 	if err != nil {
 		return err
 	}
@@ -67,6 +71,7 @@ func (con Config) Track(track Track) error {
 		return err
 	}
 	defer resp.Body.Close()
+
 
 	return nil
 }
