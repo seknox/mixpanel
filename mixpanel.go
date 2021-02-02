@@ -35,6 +35,8 @@ type Track struct {
 type TrackProperties struct {
 	// Unique user ID
 	DistinctID string `json:"distinct_id"`
+	// Event data.
+	EventData string `json:"event_data"`
 	// Project token
 	Token string `json:"token"`
 	// User remote IP address
