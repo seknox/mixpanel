@@ -72,9 +72,7 @@ func (con Config) Track(track Track) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	return resp.Body.Close()
 
-
-	return nil
 }
 
